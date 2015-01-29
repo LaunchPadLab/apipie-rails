@@ -188,20 +188,23 @@ module Apipie
       case data
       when Array, Hash
         JSON.pretty_generate(data).gsub(/: \[\s*\]/,": []").gsub(/\{\s*\}/,"{}")
+      when String
+        JSON.pretty_generate(Rack::Utils.parse_nested_query(data)).gsub(/: \[\s*\]/,": []").gsub(/\{\s*\}/,"{}")
       else
         data
       end
     end
 
     def format_example(ex)
-      example = ""
-      example << "// #{ex[:title]}\n" if ex[:title].present?
-      example << "#{ex[:verb]} #{ex[:path]}"
-      example << "?#{ex[:query]}" unless ex[:query].blank?
-      example << "\n" << format_example_data(ex[:request_data]).to_s if ex[:request_data]
-      example << "\n" << ex[:code].to_s
-      example << "\n" << format_example_data(ex[:response_data]).to_s if ex[:response_data]
-      example
+      {
+        title: ex[:title],
+        verb: ex[:verb],
+        path: ex[:path],
+        query: ex[:query],
+        code: ex[:code],
+        request_data: format_example_data(ex[:request_data]).to_s,
+        response_data: format_example_data(ex[:response_data]).to_s
+      }
     end
 
     def concern_subst(string)
